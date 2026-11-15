@@ -115,9 +115,9 @@ permissions:
   contents: write
 
 env:
-  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-24.10
-  REPO_BRANCH: mt798x-mt799x-6.6-mtwifi
-  CONFIG_URL: https://raw.githubusercontent.com/padavanonly/immortalwrt-mt798x-6.6/refs/heads/mt798x-mt799x-6.6-mtwifi/defconfig/mt7987_mt7992.config
+  REPO_URL: https://github.com/debpolaris/immortalwrt-mt798x-6.6
+  REPO_BRANCH: h5000m-patched
+  CONFIG_URL: https://raw.githubusercontent.com/debpolaris/immortalwrt-mt798x-6.6/refs/heads/h5000m-patched/defconfig/mt7987_mt7992.config
   SOURCE_DIR: immortalwrt
   TZ: Asia/Shanghai
   GOPROXY: https://goproxy.cn,https://proxy.golang.org,direct
