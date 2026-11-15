@@ -357,8 +357,8 @@ jobs:
         if: steps.features.outputs.publish_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: ImmortalWrt H5000M Latest
+          tag_name: h5000m-patched-20261115
+          name: ImmortalWrt H5000M Patched (2026-11-15)
           body: |
             🎉 **ImmortalWrt H5000M 固件已构建完成**
 
