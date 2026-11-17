@@ -13,7 +13,10 @@ GIT_TIMEOUT="${GIT_TIMEOUT:-1800}"
 FEEDS_TIMEOUT="${FEEDS_TIMEOUT:-3600}"
 CONFIG_TIMEOUT="${CONFIG_TIMEOUT:-1800}"
 DOWNLOAD_TIMEOUT="${DOWNLOAD_TIMEOUT:-7200}"
-TOOLCHAIN_TIMEOUT="${TOOLCHAIN_TIMEOUT:-7200}"
+# Cache-miss branch runs a full `make world` (toolchain + all packages + images),
+# so this needs the full-build budget, not a toolchain-only one (7200s guillotined
+# the 20261117 build at ~95% with the added Go packages). Match COMPILE_TIMEOUT.
+TOOLCHAIN_TIMEOUT="${TOOLCHAIN_TIMEOUT:-28800}"
 COMPILE_TIMEOUT="${COMPILE_TIMEOUT:-28800}"
 V2DAT_TIMEOUT="${V2DAT_TIMEOUT:-3600}"
 GOPROXY="${GOPROXY:-https://goproxy.cn,https://proxy.golang.org,direct}"
