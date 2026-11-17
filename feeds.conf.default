@@ -13,3 +13,10 @@ src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main
 # / RM5xxQ / Fibocom FM350 / MEIG SLM320 / SIMCom SIM8200 5G modems.
 # Pulled in by enable_modem_stack_config() when ENABLE_QMODEM=true.
 src-git qmodem https://github.com/FUjr/QModem.git;main
+
+# AmneziaWG (amnezia-vpn) — kmod-amneziawg + amneziawg-tools + luci-proto-amneziawg.
+# AWG 1.0 kernel module compiles amneziawg.ko from the in-tree kernel wireguard
+# source plus this feed's patch; coexists with kmod-wireguard (separate .ko).
+# amneziawg-tools ships /usr/bin/awg (not wg), so no file conflict with
+# wireguard-tools. Pulled in when ENABLE_AMNEZIAWG=true.
+src-git amneziawg https://github.com/amnezia-vpn/amneziawg-openwrt.git;master

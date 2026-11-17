@@ -42,6 +42,12 @@ ENABLE_DOCKERMAN="${ENABLE_DOCKERMAN:-false}"
 ENABLE_HOMEPROXY="${ENABLE_HOMEPROXY:-false}"
 ENABLE_ADBLOCK="${ENABLE_ADBLOCK:-true}"
 
+# WireGuard / AmneziaWG VPN stacks — built in, manually activated via LuCI.
+# Both default true; set ENABLE_AMNEZIAWG=false to fall back to WireGuard-only
+# if the AmneziaWG kernel module fails to compile against the target kernel.
+ENABLE_WIREGUARD="${ENABLE_WIREGUARD:-true}"
+ENABLE_AMNEZIAWG="${ENABLE_AMNEZIAWG:-true}"
+
 # Modem stack selection — QModem and the original luci-app-modem are
 # MUTUALLY EXCLUSIVE because both wire up the same physical QMI/USB/PCIe
 # modem stack (kmod-usb-net-qmi-wwan, quectel-CM-5G, ModemManager) and
@@ -370,6 +376,8 @@ Original Modem=${ENABLE_ORIGINAL_MODEM}
 QModem=${ENABLE_QMODEM}
 QModem-Next=${ENABLE_QMODEM_NEXT}
 QModem-Lua=${ENABLE_QMODEM_LUA}
+WireGuard=${ENABLE_WIREGUARD}
+AmneziaWG=${ENABLE_AMNEZIAWG}
 
 # ENFORCEMENT: QModem and the original luci-app-modem cannot ship together
 # (see comment on ENABLE_ORIGINAL_MODEM). Resolve the conflict here before
@@ -1302,6 +1310,20 @@ export MIHOMO_TCP_KEEPALIVE="1"\
     require_package_file "MosDNS v2ray geodata" "package/v2ray-geodata/Makefile"
   fi
 
+  if is_true "$ENABLE_WIREGUARD"; then
+    # kmod-wireguard is an in-tree kernel module (package/kernel/linux/modules),
+    # so it needs no feed install; only the userspace tools + LuCI protocol
+    # come from the packages/luci feeds.
+    feed_install_pkg wireguard-tools
+    feed_install_pkg luci-proto-wireguard
+  fi
+
+  if is_true "$ENABLE_AMNEZIAWG"; then
+    feed_install_pkg kmod-amneziawg
+    feed_install_pkg amneziawg-tools
+    feed_install_pkg luci-proto-amneziawg
+  fi
+
   rm -rf tmp/.config* tmp/.packageinfo tmp/info/.packageinfo* 2>/dev/null || true
 }
 
@@ -2039,6 +2061,28 @@ EOF
     disabled_pkgs+=("luci-app-homeproxy" "luci-i18n-homeproxy-zh-cn")
   fi
 
+  # WireGuard / AmneziaWG — built in, manually activated via LuCI. The AWG
+  # kernel module compiles from the in-tree wireguard source + feed patch and
+  # coexists with kmod-wireguard; amneziawg-tools ships /usr/bin/awg (not wg).
+  if is_true "$ENABLE_WIREGUARD"; then
+    cat >> .config <<'EOF'
+CONFIG_PACKAGE_kmod-wireguard=y
+CONFIG_PACKAGE_wireguard-tools=y
+CONFIG_PACKAGE_luci-proto-wireguard=y
+EOF
+  else
+    disabled_pkgs+=("kmod-wireguard" "wireguard-tools" "luci-proto-wireguard")
+  fi
+  if is_true "$ENABLE_AMNEZIAWG"; then
+    cat >> .config <<'EOF'
+CONFIG_PACKAGE_kmod-amneziawg=y
+CONFIG_PACKAGE_amneziawg-tools=y
+CONFIG_PACKAGE_luci-proto-amneziawg=y
+EOF
+  else
+    disabled_pkgs+=("kmod-amneziawg" "amneziawg-tools" "luci-proto-amneziawg")
+  fi
+
   if is_true "$ENABLE_UPNP"; then
     enable_upnp_stack_config
   fi
@@ -2162,6 +2206,12 @@ EOF
   verify_enabled_pkg "MosDNS geosite" "v2ray-geosite" "$ENABLE_MOSDNS"
   verify_enabled_pkg "DockerMan" "luci-app-dockerman" "$ENABLE_DOCKERMAN"
   verify_enabled_pkg "DockerMan zh-cn" "luci-i18n-dockerman-zh-cn" "$ENABLE_DOCKERMAN"
+  verify_enabled_pkg "WireGuard kmod" "kmod-wireguard" "$ENABLE_WIREGUARD"
+  verify_enabled_pkg "WireGuard tools" "wireguard-tools" "$ENABLE_WIREGUARD"
+  verify_enabled_pkg "WireGuard LuCI" "luci-proto-wireguard" "$ENABLE_WIREGUARD"
+  verify_enabled_pkg "AmneziaWG kmod" "kmod-amneziawg" "$ENABLE_AMNEZIAWG"
+  verify_enabled_pkg "AmneziaWG tools" "amneziawg-tools" "$ENABLE_AMNEZIAWG"
+  verify_enabled_pkg "AmneziaWG LuCI" "luci-proto-amneziawg" "$ENABLE_AMNEZIAWG"
   verify_enabled_pkg "Original Modem" "luci-app-modem" "$ENABLE_ORIGINAL_MODEM"
   verify_enabled_pkg "Original Modem zh-cn" "luci-i18n-modem-zh-cn" "$ENABLE_ORIGINAL_MODEM"
   # Modem kernel module verification — these MUST survive defconfig
